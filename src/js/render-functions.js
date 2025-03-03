@@ -1,31 +1,44 @@
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 
-export const createGalleryCardTemplate = imginfo => {
-  return ` 
-  <li class="gallery-item">
-    <a class="gallery-link" href="${imginfo.largeImageURL}">
-      <img
-        class="gallery-image"
-        src="${imginfo.webformatURL}"
-        alt="${imginfo.tags}"
-      />
-    </a>
-    <div class="img-details">
-      <p class="detail-item"><b>Likes:</b> ${imginfo.likes}</p>
-      <p class="detail-item"><b>Views:</b> ${imginfo.views}</p>
-      <p class="detail-item"><b>Comments:</b> ${imginfo.comments}</p>
-      <p class="detail-item"><b>Downloads:</b> ${imginfo.downloads}</p>
-    </div>
-  </li>`;
-};
+export function showLoader() {
+    document.querySelector('.loader').classList.remove('hidden');
+}
 
-export const initializeLightbox = () => {
-  const lightbox = new SimpleLightbox('.gallery a', {
-    captions: true,
-    captionsData: 'alt',
-    captionDelay: 250,
-  });
+export function hideLoader() {
+    document.querySelector('.loader').classList.add('hidden');
+}
 
-  lightbox.refresh();
-};
+export function clearGallery() {
+    document.getElementById("gallery").innerHTML = "";
+}
+
+export function displayImages(images) {
+    const gallery = document.getElementById("gallery");
+
+    clearGallery();
+
+    images.forEach(image => {
+        const listItem = document.createElement('li');
+        listItem.classList.add('gallery-item');
+
+        listItem.innerHTML = `
+        <a href="${image.largeImageURL}" class="gallery-link">
+            <img src="${image.webformatURL}" alt="${image.tags}" class="gallery-image" />
+        </a>
+        <div class="info">
+            <p>Likes <span>${image.likes}</span></p>
+            <p>Views <span>${image.views}</span></p>
+            <p>Comments <span>${image.comments}</span></p>
+            <p>Downloads <span>${image.downloads}</span></p>
+        </div>
+    `;
+
+        gallery.appendChild(listItem);
+    });
+
+    const lightbox = new SimpleLightbox('.gallery-link', {
+        captionsData: "alt"
+    });
+    lightbox.refresh();
+}

@@ -1,19 +1,22 @@
-const BASE_URL = 'https://pixabay.com/api/';
+import axios from "axios";
 
-export const fetchPhotos = searchedQuery => {
-  const urlParams = new URLSearchParams({
-    key: '45497823-3ee11a5b90ff874601dfe7178',
-    q: searchedQuery,
-    image_type: 'photo',
-    orientation: 'horizontal',
-    safesearch: 'true',
-    per_page: 18,
-  });
+const API_KEY = "49001064-c7b72e374a4ae6399075933f6";
+const BASE_URL = "https://pixabay.com/api/";
 
-  return fetch(`${BASE_URL}?${urlParams}`).then(response => {
-    if (!response.ok) {
-      throw new Error(response.status);
-    }
-    return response.json();
-  });
-};
+export function fetchImages(query) {
+    const params = {
+        key: API_KEY,
+        q: query,
+        image_type: "photo",
+        orientation: "horizontal",
+        safesearch: true,
+    };
+
+    return axios
+        .get(BASE_URL, { params })
+        .then(response => response.data.hits)
+        .catch(error => {
+            console.error("Error fetching images:", error);
+            throw error;
+        });
+}

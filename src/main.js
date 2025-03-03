@@ -1,61 +1,56 @@
-import {
-  createGalleryCardTemplate,
-  initializeLightbox,
-} from './js/render-functions';
+import iziToast from "izitoast";
+import "izitoast/dist/css/iziToast.min.css";
+import { fetchImages } from "./js/pixabay-api";
+import { showLoader, hideLoader, displayImages } from "./js/render-functions";
 
-import { fetchPhotos } from './js/pixabay-api';
-import iziToast from 'izitoast';
+const form = document.getElementById("search-form");
+const input = document.getElementById("search-input");
+const loader = document.querySelector(".loader");
+const gallery = document.getElementById("gallery");
 
-const formEl = document.querySelector('.js-page-form');
-const galleryEl = document.querySelector('.js-gallery');
-const loaderEl = document.querySelector('.js-loader');
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const query = input.value.trim();
 
-const showLoader = () => {
-  loaderEl.classList.remove('is-hidden');
-};
-
-const hideLoader = () => {
-  loaderEl.classList.add('is-hidden');
-};
-
-const onFormElSubmit = event => {
-  event.preventDefault();
-
-  const searchedValue = formEl.elements.user_query.value;
-
-  showLoader();
-
-  fetchPhotos(searchedValue)
-    .then(data => {
-      if (data.hits && data.hits.length === 0) {
+    if (query === "") {
         iziToast.error({
-          message:
-            'Sorry, there are no images matching your search query. Please try again!',
-          position: 'topRight',
+            title: "Error",
+            message: "Please enter a search query!",
+            position: "topRight",
+            pauseOnHover: false,
+            closeOnClick: true,
         });
-        galleryEl.innerHTML = '';
-        formEl.reset();
         return;
-      }
+    }
 
-      const galleryCardsTemplate = data.hits
-        .map(imgDetails => createGalleryCardTemplate(imgDetails))
-        .join('');
+    // Очищаємо галерею перед запитом
+    gallery.innerHTML = "";
+    showLoader(loader);
 
-      galleryEl.innerHTML = galleryCardsTemplate;
+    try {
+        const images = await fetchImages(query);
 
-      initializeLightbox();
-    })
-    .catch(err => {
-      console.log(err);
-      iziToast.error({
-        message: 'Something went wrong. Please try again!',
-        position: 'topRight',
-      });
-    })
-    .finally(() => {
-      hideLoader();
-    });
-};
-
-formEl.addEventListener('submit', onFormElSubmit);
+        if (images.length === 0) {
+            iziToast.error({
+                title: "Error",
+                message: "Sorry, there are no images matching your search query. Please try again!",
+                position: "topRight",
+                pauseOnHover: false,
+                closeOnClick: true,
+            });
+        } else {
+            displayImages(images);
+        }
+    } catch (error) {
+        gallery.innerHTML = "";
+        iziToast.error({
+            title: "Error",
+            message: "Something went wrong. Please try again later!",
+            position: "topRight",
+            pauseOnHover: false,
+            closeOnClick: true,
+        });
+    } finally {
+        hideLoader(loader);
+    }
+});
